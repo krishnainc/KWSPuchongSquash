@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <!-- Basic -->
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- Mobile Metas -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+  <!-- Site Metas -->
+  <link rel="icon" href="images/fevicon.png" type="image/png" />
+  <meta name="keywords" content="" />
+  <meta name="description" content="" />
+  <meta name="author" content="Grooot" />
+  <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+
+  <title>KWSPuchong</title>
+
+  <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.3.1/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.0.1/firebase-auth.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+
+ 
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+    <!--Stylesheet-->
+    <style media="screen">
+      *,
+*:before,
+*:after{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+body{
+    background-color: #080710;
+}
+.background{
+    width: 430px;
+    height: 520px;
+    position: absolute;
+    transform: translate(-50%,-50%);
+    left: 50%;
+    top: 50%;
+}
+.background .shape{
+    height: 200px;
+    width: 200px;
+    position: absolute;
+    border-radius: 50%;
+}
+.shape:first-child{
+    background: linear-gradient(
+        #1845ad,
+        #23a2f6
+    );
+    left: -80px;
+    top: -80px;
+}
+.shape:last-child{
+    background: linear-gradient(
+        to right,
+        #ff512f,
+        #f09819
+    );
+    right: -30px;
+    bottom: -80px;
+}
+form{
+    height: 520px;
+    width: 400px;
+    background-color: rgba(255,255,255,0.13);
+    position: absolute;
+    transform: translate(-50%,-50%);
+    top: 50%;
+    left: 50%;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255,255,255,0.1);
+    box-shadow: 0 0 40px rgba(8,7,16,0.6);
+    padding: 50px 35px;
+}
+form *{
+    font-family: 'Poppins',sans-serif;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    outline: none;
+    border: none;
+}
+form h3{
+    font-size: 32px;
+    font-weight: 500;
+    line-height: 42px;
+    text-align: center;
+}
+
+label{
+    display: block;
+    margin-top: 30px;
+    font-size: 16px;
+    font-weight: 500;
+}
+input{
+    display: block;
+    height: 50px;
+    width: 100%;
+    background-color: rgba(255,255,255,0.07);
+    border-radius: 3px;
+    padding: 0 10px;
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 300;
+}
+::placeholder{
+    color: #e5e5e5;
+}
+button{
+    margin-top: 50px;
+    width: 100%;
+    background-color: #ffffff;
+    color: #080710;
+    padding: 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+}
+.social{
+  margin-top: 30px;
+  display: flex;
+}
+.social div{
+  background: red;
+  width: 150px;
+  border-radius: 3px;
+  padding: 5px 10px 10px 5px;
+  background-color: rgba(255,255,255,0.27);
+  color: #eaf0fb;
+  text-align: center;
+}
+.social div:hover{
+  background-color: rgba(255,255,255,0.47);
+}
+.social .fb{
+  margin-left: 25px;
+}
+.social i{
+  margin-right: 4px;
+}
+
+    </style>
+</head>
+<body>
+    <div class="background">
+        <div class="shape"></div>
+        <div class="shape"></div>
+    </div>
+    <form>
+        <h3>Enter Your AuthCode</h3>
+        <br>
+        <br>
+        <input type="text" placeholder="AuthCode" id="authcode">
+
+        <button id="validate">Validate</button>
+    </form>
+
+  <script>
+    // Initialize Firebase with your Firebase project configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCtF2PDFrAujL9AnGP3TlP1B2Bez0-VUeg",
+      authDomain: "squashredone.firebaseapp.com",
+      databaseURL: "https://squashredone-default-rtdb.firebaseio.com",
+      projectId: "squashredone",
+      storageBucket: "squashredone.appspot.com",
+      messagingSenderId: "577067749047",
+      appId: "1:577067749047:web:354e134d5052db8b4b4732",
+      measurementId: "G-4DGLLXKPSN"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    function validateAuthCode() {
+
+      const currentEpochTimeInSeconds = Math.floor(Date.now() / 1000);
+      const oneMinuteLater = currentEpochTimeInSeconds + 60;
+
+      const authcode = document.getElementById("authcode").value;
+      
+      // Reference to the "auth" node in your database (adjust this to match your database structure)
+      const authcodesRef = firebase.database().ref('auth');
+
+      // Reference to the "lock" node in your database
+      const lockRef = firebase.database().ref('lock');
+
+      lockRef.once("value", (lockSnapshot) => {
+        const isLocked = lockSnapshot.val().isLocked;
+
+        if (!isLocked) {
+          // Set the lock to prevent other devices from accessing
+          lockRef.update({ isLocked: true });
+
+          authcodesRef.once("value", (snapshot) => {
+            const authcodes = snapshot.val();
+
+            if (authcodes && authcodes[authcode]) {
+
+              // Get the "court" data from the "auth" node
+              const courtData = authcodes[authcode].court;
+              const duration = authcodes[authcode].duration;
+              const endtime = authcodes[authcode].end;
+              const start = authcodes[authcode].start;
+
+              // convert to epoch
+
+              // Create a Date object from the date-time string
+              const dateTimeObjectend = new Date(endtime);
+              const dateTimeObjectstart = new Date(start);
+
+              // Get the epoch time (Unix timestamp) in milliseconds
+              const epochTimeMillisend = dateTimeObjectend.getTime();
+              const epochTimeMillisstart = dateTimeObjectstart.getTime();
+
+              // Convert to seconds (Unix timestamp)
+              const epochTimeSecondsend = Math.floor(epochTimeMillisend / 1000);
+              const epochTimeSecondsstart = Math.floor(epochTimeMillisstart / 1000);
+
+              if (currentEpochTimeInSeconds < epochTimeSecondsstart)
+              {
+                Swal.fire({
+                icon: "error",
+                title: "Validation Failed",
+                text: "You are too early. Please try again later.",
+              });
+              }
+              else if (currentEpochTimeInSeconds > epochTimeSecondsend)
+              {
+                Swal.fire({
+                icon: "error",
+                title: "Validation Failed",
+                text: "You are too late. Please try again later.",
+              });
+              }
+
+              else
+              {
+                // Push data into Firebase, including the number of courts
+                const newData = {
+                  Box: courtData,
+                  duration: duration,
+                  start: oneMinuteLater,
+                  end: epochTimeSecondsend,
+                  status: 1,
+                };
+
+                Swal.fire({
+                icon: "success",
+                title: "Validation Successful!",
+                text: "You are authenticated.",
+              });
+
+              const tftref = firebase.database().ref('Safebox'); // Change 'userdata' to your desired node name
+              tftref.set(newData);
+
+              if (courtData == 'court-1')
+              {
+                // Push the new data into Firebase under a specific node
+                const newDataRef = firebase.database().ref('Safebox1'); // Change 'userdata' to your desired node name
+                newDataRef.set(newData);
+
+              }
+
+              if (courtData == 'court-2')
+              {
+                // Push the new data into Firebase under a specific node
+                const newDataRef = firebase.database().ref('Safebox2'); // Change 'userdata' to your desired node name
+                newDataRef.set(newData);
+
+              }
+
+              
+
+            }
+
+
+            } 
+            
+            else {
+              // Authcode is invalid
+              Swal.fire({
+                icon: "error",
+                title: "Validation Failed",
+                text: "Invalid AuthCode. Please try again.",
+              });
+            }
+
+            // Unlock the site after validation
+            lockRef.update({ isLocked: false });
+          })
+          .catch((error) => {
+            console.error("Firebase read error:", error);
+
+            // Unlock the site on error
+            lockRef.update({ isLocked: false });
+          });
+        } else {
+          // Site is locked, display a message to the user
+          Swal.fire({
+            icon: "info",
+            title: "In Queue",
+            text: "Another device is currently accessing the site. Please wait.",
+          });
+        }
+      })
+      .catch((error) => {
+        console.error("Firebase read error:", error);
+      });
+  }
+
+
+
+    // Add an event listener to the "Log In" button
+    document.getElementById("validate").addEventListener("click", function() {
+      // Prevent the default form submission behavior
+      event.preventDefault();
+      
+      // Call the validateAuthCode function to check the authcode
+      validateAuthCode();
+    });
+  </script>
+
+</body>
+</html>

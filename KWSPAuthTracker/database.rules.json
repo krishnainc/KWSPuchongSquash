@@ -1,0 +1,44 @@
+{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "booking": {
+      "$court_number": {
+        "$uid": {
+          ".read": "$uid === auth.uid || root.child('booking').child($court_number).child(auth.uid).child($uid).child('name').val() === auth.displayName",
+          ".write": "$uid === auth.uid"
+        }
+      }
+    },
+
+    "auth": {
+      ".read": true,  
+      ".write": false 
+    },
+
+    "Safebox": {
+      ".read": true,  
+      ".write": true
+    },
+
+    "Safebox1": {
+      ".read": true,  
+      ".write": true
+    },
+
+    "Safebox2": {
+      ".read": true,  
+      ".write": true
+    },
+
+    "lock": {
+      ".read": true,  
+      ".write": true
+    },
+
+    "other_data": {
+      ".read": false,
+      ".write": false
+    }
+  }
+}
